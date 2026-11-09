@@ -3,9 +3,9 @@ package category
 import "errors"
 
 type Category struct {
-	id          int64  `db:"id" json:"id"`
-	name        string `db:"name" json:"name"`
-	description string `db:"description" json:"description"`
+	id          int64  `db:"id"`
+	name        string `db:"name"`
+	description string `db:"description"`
 }
 
 func NewCategory(name string, description string) (*Category, error) {

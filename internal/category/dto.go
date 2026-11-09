@@ -1,12 +1,12 @@
 package category
 
 type CategoryRequest struct {
-	name        string
-	description string
+	Name        string `json:"name"`
+	Description string `json:"description"`
 }
 
 type CategoryResponse struct {
-	id          string
-	name        string
-	description string
+	Id          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
 }
