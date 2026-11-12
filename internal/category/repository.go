@@ -76,10 +76,7 @@ func (r *CategoryRepository) UpdateDescription(id int, description string) (*Cat
 	}
 
 	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return nil, sql.ErrNoRows
-	}
-	if rowsAffected == 0 {
+	if err != nil || rowsAffected == 0 {
 		return nil, ErrCategoryNotFound
 	}
 
