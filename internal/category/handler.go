@@ -28,6 +28,7 @@ func (h *CategoryHandler) FindById(w http.ResponseWriter, r *http.Request) {
 	intId, idErr := strconv.Atoi(strId)
 	if idErr != nil {
 		http.Error(w, idErr.Error(), http.StatusBadRequest)
+		return
 	}
 
 	// Simple error treatment for simplify the process
@@ -35,8 +36,10 @@ func (h *CategoryHandler) FindById(w http.ResponseWriter, r *http.Request) {
 	if searchErr != nil {
 		if errors.Is(searchErr, ErrCategoryNotFound) {
 			http.Error(w, searchErr.Error(), http.StatusNotFound)
+			return
 		} else {
 			http.Error(w, searchErr.Error(), http.StatusInternalServerError)
+			return
 		}
 	}
 
@@ -54,9 +57,11 @@ func (h *CategoryHandler) FindAll(w http.ResponseWriter, r *http.Request) {
 	if searchErr != nil {
 		if errors.Is(searchErr, ErrNoCategoriesFound) {
 			http.Error(w, searchErr.Error(), http.StatusNotFound)
+			return
 		}
 		if errors.Is(searchErr, ErrCategoryConversionFailed) {
 			http.Error(w, searchErr.Error(), http.StatusInternalServerError)
+			return
 		}
 	}
 
@@ -66,6 +71,7 @@ func (h *CategoryHandler) FindAll(w http.ResponseWriter, r *http.Request) {
 	jsonErr := json.NewEncoder(w).Encode(response)
 	if jsonErr != nil {
 		http.Error(w, jsonErr.Error(), http.StatusInternalServerError)
+		return
 	}
 }
 
@@ -73,11 +79,13 @@ func (h *CategoryHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var dto CategoryRequest
 	if err := json.NewDecoder(r.Body).Decode(&dto); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
 	response, err := h.service.Create(&dto)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
@@ -85,6 +93,7 @@ func (h *CategoryHandler) Create(w http.ResponseWriter, r *http.Request) {
 	jsonErr := json.NewEncoder(w).Encode(response)
 	if jsonErr != nil {
 		http.Error(w, jsonErr.Error(), http.StatusInternalServerError)
+		return
 	}
 }
 
@@ -93,21 +102,26 @@ func (h *CategoryHandler) UpdateDescription(w http.ResponseWriter, r *http.Reque
 	id, convertErr := strconv.Atoi(r.PathValue("id"))
 	if convertErr != nil {
 		http.Error(w, convertErr.Error(), http.StatusBadRequest)
+		return
 	}
 	if err := json.NewDecoder(r.Body).Decode(&dto); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
 	response, err := h.service.UpdateDescription(id, &dto)
 	if err != nil {
 		if errors.Is(err, ErrCategoryFailedToUpdate) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
 		}
 		if errors.Is(err, ErrCategoryNotFound) {
 			http.Error(w, err.Error(), http.StatusNotFound)
+			return
 		}
 		if errors.Is(err, ErrCategoryConversionFailed) {
 			http.Error(w, ErrCategoryConversionFailed.Error(), http.StatusInternalServerError)
+			return
 		}
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -116,6 +130,7 @@ func (h *CategoryHandler) UpdateDescription(w http.ResponseWriter, r *http.Reque
 	jsonErr := json.NewEncoder(w).Encode(response)
 	if jsonErr != nil {
 		http.Error(w, jsonErr.Error(), http.StatusInternalServerError)
+		return
 	}
 }
 
@@ -123,13 +138,16 @@ func (h *CategoryHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	id, convertErr := strconv.Atoi(r.PathValue("id"))
 	if convertErr != nil {
 		http.Error(w, convertErr.Error(), http.StatusBadRequest)
+		return
 	}
 
 	if err := h.service.Delete(id); err != nil {
 		if errors.Is(err, ErrCategoryNotFound) {
 			http.Error(w, err.Error(), http.StatusNotFound)
+			return
 		} else {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	}
 

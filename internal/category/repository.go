@@ -25,13 +25,14 @@ func (r *CategoryRepository) FindById(id int) (*Category, error) {
 	return &category, nil
 }
 
-func (r *CategoryRepository) FindAll() (*[]Category, error) {
+func (r *CategoryRepository) FindAll() ([]Category, error) {
 	rows, err := r.db.Query("SELECT id, name, description FROM categories_tb")
 	if err != nil {
 		return nil, ErrNoCategoriesFound
 	}
 	var categories []Category
 
+	defer rows.Close()
 	for rows.Next() {
 		var c Category
 		err := rows.Scan(&c.id, &c.name, &c.description)
@@ -45,20 +46,16 @@ func (r *CategoryRepository) FindAll() (*[]Category, error) {
 		return nil, errors.New("failed to fetch all categories")
 	}
 
-	return &categories, nil
+	return categories, nil
 }
 
 func (r *CategoryRepository) Create(cat *Category) (*Category, error) {
-	query := "INSERT INTO categories_tb (name, description) VALUES ($1, $2)"
+	query := "INSERT INTO categories_tb (name, description) VALUES ($1, $2) RETURNING id"
 
-	result, err := r.db.Exec(query, cat.name, cat.description)
+	var catId int64
+	err := r.db.QueryRow(query, cat.name, cat.description).Scan(&catId)
 	if err != nil {
 		return nil, ErrFailedToCreateCategory
-	}
-
-	catId, err := result.LastInsertId()
-	if err != nil {
-		return nil, ErrCategoryConversionFailed
 	}
 
 	cat.SetId(catId)
@@ -68,24 +65,15 @@ func (r *CategoryRepository) Create(cat *Category) (*Category, error) {
 
 // Just description can be updated
 func (r *CategoryRepository) UpdateDescription(id int, description string) (*Category, error) {
-	query := "UPDATE categories_tb SET description = $1 WHERE id = $2"
+	query := "UPDATE categories_tb SET description = $1 WHERE id = $2 RETURNING id, name, description"
 
-	result, err := r.db.Exec(query, description, id)
+	var cat Category
+	err := r.db.QueryRow(query, description, id).Scan(&cat.id, &cat.name, &cat.description)
 	if err != nil {
 		return nil, ErrCategoryFailedToUpdate
 	}
 
-	rowsAffected, err := result.RowsAffected()
-	if err != nil || rowsAffected == 0 {
-		return nil, ErrCategoryNotFound
-	}
-
-	cat, err := r.FindById(id)
-	if err != nil {
-		return nil, ErrCategoryNotFound
-	}
-
-	return cat, nil
+	return &cat, nil
 }
 
 // Delete Method exists just for complete the CRUD
