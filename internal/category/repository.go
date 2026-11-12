@@ -67,7 +67,7 @@ func (r *CategoryRepository) Create(cat *Category) (*Category, error) {
 }
 
 // Just description can be updated
-func (r *CategoryRepository) updateDescription(id int, description string) (*Category, error) {
+func (r *CategoryRepository) UpdateDescription(id int, description string) (*Category, error) {
 	query := "UPDATE categories_tb SET description = $1 WHERE id = $2"
 
 	result, err := r.db.Exec(query, description, id)
