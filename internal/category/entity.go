@@ -45,7 +45,7 @@ func (c *Category) SetId(id int64) error {
 
 func (c *Category) SetName(name string) error {
 	if name == "" {
-		return errors.New("name is required")
+		return ErrInvalidCategoryName
 	}
 	c.name = name
 	return nil
@@ -53,7 +53,7 @@ func (c *Category) SetName(name string) error {
 
 func (c *Category) SetDescription(description string) error {
 	if description == "" {
-		return errors.New("Description is required")
+		return ErrInvalidCategoryDescription
 	}
 	c.description = description
 	return nil
